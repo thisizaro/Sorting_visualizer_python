@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+import time
 pygame.init()
 
 class DrawInformation:
@@ -106,11 +107,93 @@ def bubble_sort(draw_info, ascending = True):
     return lst
 
 
+def insertion_sort(draw_info, ascending=True):
+    lst = draw_info.lst
+
+    for i in range(1, len(lst)):
+        key = lst[i]
+        j = i - 1
+
+        while j >= 0 and ((ascending and lst[j] > key) or (not ascending and lst[j] < key)):
+            lst[j + 1] = lst[j]
+            j -= 1
+            draw_list(draw_info, {j + 1: DrawInformation.RED})
+            draw(draw_info)  # Adjust the delay for visualization
+            draw_list(draw_info)
+            pygame.display.update()
+
+        lst[j + 1] = key
+        draw_list(draw_info, {i: DrawInformation.GREEN})
+        draw(draw_info)  # Adjust the delay for visualization
+        draw_list(draw_info)
+        pygame.display.update()
+
+    return lst
+
+
+
+def merge_sort(draw_info, ascending=True):
+    def merge(arr, left, mid, right):
+        n1 = mid - left + 1
+        n2 = right - mid
+
+        L = [0] * n1
+        R = [0] * n2
+
+        for i in range(n1):
+            L[i] = arr[left + i]
+        for i in range(n2):
+            R[i] = arr[mid + 1 + i]
+
+        i = 0
+        j = 0
+        k = left
+
+        while i < n1 and j < n2:
+            if (ascending and L[i] <= R[j]) or (not ascending and L[i] >= R[j]):
+                arr[k] = L[i]
+                i += 1
+            else:
+                arr[k] = R[j]
+                j += 1
+            k += 1
+
+        while i < n1:
+            arr[k] = L[i]
+            i += 1
+            k += 1
+
+        while j < n2:
+            arr[k] = R[j]
+            j += 1
+            k += 1
+
+    def merge_sort_recursive(arr, left, right):
+        if left < right:
+            mid = (left + right) // 2
+            merge_sort_recursive(arr, left, mid)
+            merge_sort_recursive(arr, mid + 1, right)
+            merge(arr, left, mid, right)
+
+            # Delay and update the visualization
+            draw_list(draw_info, {i: DrawInformation.RED for i in range(left, right + 1)})
+            draw(draw_info)
+            # time.sleep(0.1)  # Adjust the delay duration as needed
+            draw_list(draw_info)
+            pygame.display.update()
+
+
+    arr = draw_info.lst
+    merge_sort_recursive(arr, 0, len(arr) - 1)
+
+    return arr
+
+
 def main():
     run = True 
     clock = pygame.time.Clock()
 
-    n = 50
+    n = 100
     min_val = 0
     max_val = 100
 
@@ -123,18 +206,9 @@ def main():
     sorting_algo_name = "Bubble Sort"
     sorting_algorithm_generator = None
 
-
     while run:
         clock.tick(60)
-        
-        if sorting:
-            try:
-                next(sorting_algorithm_generator)
-            except StopIteration:
-                sorting = False
-
-        else:
-            draw(draw_info)
+        draw(draw_info)
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -158,13 +232,19 @@ def main():
             elif event.key == pygame.K_d and sorting == False:
                 ascending = False
 
-            
+            elif event.key == pygame.K_b and sorting == False:
+                sorting_algorithm = bubble_sort
+                sorting_algo_name = "Bubble Sort"
 
-    
+            elif event.key == pygame.K_i and sorting == False:
+                sorting_algorithm = insertion_sort
+                sorting_algo_name = "Insertion Sort"
+
+            elif event.key == pygame.K_m and sorting == False:
+                sorting_algorithm = merge_sort
+                sorting_algo_name = "Merge Sort"
 
     pygame.quit()
 
-
 if __name__ == "__main__":
     main()
-
